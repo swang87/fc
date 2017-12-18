@@ -1,0 +1,14 @@
+Package: fapply
+Type: Package
+Title: Function Composition in R
+Version: 0.1.0
+Authors@R: c(person("Xiaofei (Susan)", "Wang", email="xiaofei.wang@yale.edu", 
+  role = c("aut", "cre")),
+  person("Michael", "Kane", email="michael.kane@yale.edu", role="aut")
+Description: Provides a way to compose functions in R, and allows for chaining
+commands using the magrittr-esque forward-pipe operator, %>%.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+Imports: codetools
+Suggests: magrittr
