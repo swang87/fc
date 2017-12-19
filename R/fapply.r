@@ -1,6 +1,7 @@
-require(codetools)
 
+#' @export
 fapply <- function(func, ...) {
+  require(codetools)
   f <- function() {}
   args <- as.list(match.call())
   fun_arg_list_str <- "fun_arg_list <- list();"

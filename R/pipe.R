@@ -5,6 +5,7 @@
   rhs(lhs)
 }
 `%>>>%` <- function(lhs, rhs) { # lhs, rhs both funcs
+  require(codetools)
   tmpfun <- function() {}
   fun_args <- as.list(match.call())
   lhs <- as.character(as.expression(fun_args[[2]]))
@@ -37,7 +38,10 @@
                            left_to_right_arg, " = ", lhs_string,
                            rhs_args,")")))
 }
+#' @export
 `%>%` <- function(lhs, rhs) {
+  require(codetools)
+
   fun_args <- as.list(match.call())
 
   # detect if first argument is a data frame
