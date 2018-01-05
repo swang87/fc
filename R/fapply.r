@@ -1,19 +1,3 @@
-
-function_to_string <- function(f) {
-  ret <- "function("
-  for (fml in names(formals(f))) {
-    paste0(ret, fml)
-    if (length(as.character(fmls[[fml]])) > 0) {
-      if (inherits(fmls[[fml]], "function")) {
-        paste0(ret, fml, "=", function_to_string(fmls[[fml]]))
-      } else {
-        paste0(ret, fml, "=", as.character(fmls[[fml]]))
-      }
-    }
-  }
-  ret
-}
-
 #' @title Generalized Function Composition and Partial Function Evaluation
 #'
 #' @description 'fapply' is used to modify functions. It can be used to
