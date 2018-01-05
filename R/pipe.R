@@ -1,11 +1,11 @@
 # idea: x %>% (f1() %>% f2()) should be converted to x %>>% f1() %>>>% f2()
 #       f1() %>% f2() should be converted to f1() %>>>% f2()
+#' @importFrom codetools findGlobals
 `%>>%` <- function(lhs, rhs) { # lhs is data, rhs is func
   if (!is.function(rhs)) stop("Error: rhs is not a function.")
   rhs(lhs)
 }
 `%>>>%` <- function(lhs, rhs) { # lhs, rhs both funcs
-  require(codetools)
   tmpfun <- function() {}
   fun_args <- as.list(match.call())
   lhs <- as.character(as.expression(fun_args[[2]]))
@@ -38,9 +38,10 @@
                            left_to_right_arg, " = ", lhs_string,
                            rhs_args,")")))
 }
+
+#' @importFrom codetools findGlobals
 #' @export
 `%>%` <- function(lhs, rhs) {
-  require(codetools)
 
   fun_args <- as.list(match.call())
 

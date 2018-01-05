@@ -2,3 +2,4 @@
 
 export("%>%")
 export(fapply)
+importFrom(codetools,findGlobals)
