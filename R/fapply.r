@@ -1,4 +1,19 @@
 
+function_to_string <- function(f) {
+  ret <- "function("
+  for (fml in names(formals(f))) {
+    paste0(ret, fml)
+    if (length(as.character(fmls[[fml]])) > 0) {
+      if (inherits(fmls[[fml]], "function")) {
+        paste0(ret, fml, "=", function_to_string(fmls[[fml]]))
+      } else {
+        paste0(ret, fml, "=", as.character(fmls[[fml]]))
+      }
+    }
+  }
+  ret
+}
+
 #' @title Generalized Function Composition and Partial Function Evaluation
 #'
 #' @description 'fapply' is used to modify functions. It can be used to
@@ -42,39 +57,62 @@ fapply <- function(func, ...) {
                     "      fun_arg_list[[names(args)[i]]] <- args[[i]] }; ")
 
   for(i in seq_len(length(args) - arg_offset))  {
-     # better way of doing this?
-     if (substr(as.character(as.expression(args[[i+arg_offset]])),
-                1, 9) == "function(") {
-       fun_arg_list_str <- paste(fun_arg_list_str,
-         paste0("fun_arg_list[['",
-                names(args)[i + arg_offset],
-                "']] <- do.call(",
-                as.expression(args[[i + arg_offset]]),
-                ", list(",
-                names(formals(eval(args[[i+arg_offset]])))[1],
-                "=",
-                names(args)[i + arg_offset],
-                "))"),
-         sep=";")
-     } else
-       fun_arg_list_str <- paste(fun_arg_list_str,
-                             paste0("fun_arg_list[['",
-                                    names(args)[i + arg_offset], "']] <- ",
-                                    as.expression(args[[i + arg_offset]])),
-                             sep=";")
-     tmpfun <- function(){}
-     try_eval <- try(eval(args[[i + arg_offset]]), silent=TRUE)
-     if (class(try_eval) == "function") {
-       body(tmpfun) <- body(try_eval)
-     } else
-       body(tmpfun) <- parse(text= paste0("{",
-         as.character(
-           as.expression(args[[i + arg_offset]])),
-         "}"))
-     tmpfunvars <- findGlobals(tmpfun, merge=FALSE)$variables
-     if (names(args)[i+arg_offset] %in% tmpfunvars) {
-       spec_args <- c(spec_args, names(args)[i+arg_offset])
-     }
+    # If it's a call, see if it's a function declaration.
+    if (inherits(args[[i + arg_offset]], "call")) {
+      obj <- try(eval(args[[i + arg_offset]]), silent=TRUE)
+      # If we can't evaluate then leave it alone.
+      if (!inherits(obj, "try-error")) {
+        if (is.function(obj)) {
+          args[[i + arg_offset]] <- obj
+        } else {
+          stop(paste0("Don't know how to deal with object of class ",
+                      class(obj), "."))
+        }
+      }
+    }
+    if (inherits(args[[i + arg_offset]], "name")) {
+      # If it's a name, then see what it is.
+      obj <- eval(args[[i + arg_offset]])
+      if (!is.function(obj)) {
+        # It's not a function. We can set the evaluated object to the 
+        # argument.
+        args[[i + arg_offset]] <- obj
+      } else {
+        # It's a function. Assume it's the one we apply to the specified
+        # parameter before do.call.
+        args[[i + arg_offset]] <- parse(text=
+          paste0(as.character(args[[i + arg_offset]]), "(", 
+            names(args)[i + arg_offset], ")"))
+        
+      }
+      #args[[i + arg_offset]] <- fapply(eval(args[[i + arg_offset]]))
+    }
+    if (inherits(args[[i + arg_offset]], "function")) {
+      fun_arg_list_str <- paste(fun_arg_list_str,
+        paste0("fun_arg_list[['",
+               names(args)[i + arg_offset], "']] <- (",
+               paste(deparse(args[[i + arg_offset]]), collapse=" "), ")(",
+               names(args)[i + arg_offset], ")"))
+    } else {
+      fun_arg_list_str <- paste(fun_arg_list_str,
+        paste0("fun_arg_list[['",
+               names(args)[i + arg_offset], "']] <- ",
+               as.expression(args[[i + arg_offset]])), sep=";")
+
+    } 
+    tmpfun <- function(){}
+    try_eval <- try(eval(args[[i + arg_offset]]), silent=TRUE)
+    if (class(try_eval) == "function") {
+      body(tmpfun) <- body(try_eval)
+    } else
+      body(tmpfun) <- parse(text= paste0("{",
+        as.character(
+          as.expression(args[[i + arg_offset]])),
+        "}"))
+    tmpfunvars <- findGlobals(tmpfun, merge=FALSE)$variables
+    if (names(args)[i+arg_offset] %in% tmpfunvars) {
+      spec_args <- c(spec_args, names(args)[i+arg_offset])
+    }
   }
 
 
@@ -99,8 +137,7 @@ fapply <- function(func, ...) {
   body_str <- paste0("{", fun_arg_list_str, ";",
                      body_str)
   formals(f) <- formals(func)[union(spec_args, other_args)]
-  fun_line <- paste0(
-    "do.call(", as.character(as.expression(args$func)),", fun_arg_list)")
+  fun_line <- paste0( "do.call(", deparse(args$func),", fun_arg_list)")
   body_str <- paste0(body_str, fun_line, "}")
   body(f) <- parse(text=body_str)
   environment(f) <- parent.frame()

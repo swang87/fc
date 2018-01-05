@@ -41,3 +41,15 @@ test_that(
     ncp <- 4
     expect_equal(rf_samples, rf(10, df1, df2, ncp))
   })
+
+test_that("Function composition with anonymous functions works.", {
+  first <- fapply(head, x = function(x) x[1,])  
+  expect_equal(iris[1,], first(iris))
+})
+
+test_that("Function composition with anonymous functions works 2.", {
+  first <- fapply(function(x) x[1,], x = function(x) x[1:16, ])
+  expect_equal(iris[1,], first(iris))
+})
+
+
