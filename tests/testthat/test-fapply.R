@@ -2,7 +2,7 @@ context('fapply operations')
 
 test_that("Partial function evaluation works.", {
   head3 <- fapply(head, n=3)
-  expect_equal(head3(iris), iris[1:3,])  
+  expect_equal(head3(iris), iris[1:3,])
 })
 
 test_that("Function composition works.", {
@@ -43,7 +43,7 @@ test_that(
   })
 
 test_that("Function composition with anonymous functions works.", {
-  first <- fapply(head, x = function(x) x[1,])  
+  first <- fapply(head, x = function(x) x[1,])
   expect_equal(iris[1,], first(iris))
 })
 
@@ -52,4 +52,20 @@ test_that("Function composition with anonymous functions works 2.", {
   expect_equal(iris[1,], first(iris))
 })
 
+test_that("Piping operator works for function composition.",{
+  v <- fapply(head, n = ncol(x)) %>%
+    fapply(tail, n=2) %>% fapply(nrow)
+  expect_equal(2, v(iris))
+})
+
+test_that("Piping operator works for applying composed function to data object.",{
+  val <- iris %>% (fapply(head, n = ncol(x)) %>%
+    fapply(tail, n=2) %>% fapply(nrow))
+  expect_equal(2, val)
+})
+
+test_that("Piping operator works to pipe multiple arguments via a list.", {
+  val <- list(x = iris, n = 3) %>% (fapply(tail, x=x$x, n=x$n) %>% fapply(head, n=2))
+  expect_equal(iris[148:149,], val)
+})
 

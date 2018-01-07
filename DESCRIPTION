@@ -15,5 +15,7 @@ License: GPL-2
 Imports:
     codetools
 Suggests:
-    magrittr, testthat, knitr
-RoxygenNote: 6.0.1
+    magrittr,
+    testthat,
+    knitr
+RoxygenNote: 5.0.1

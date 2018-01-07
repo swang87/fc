@@ -10,16 +10,16 @@
 #' @details The 'fapply' function works by capturing function modifier
 #' expressions in a list, which can be applied to the specified function
 #' via the 'do.call' function.
-#' The function make use of standard R evaluation only. The 'substitute' 
+#' The function make use of standard R evaluation only. The 'substitute'
 #' function is not used and modifiers expressions must be syntatically valid.
 #' @importFrom codetools findGlobals
 #' @examples
-#' 
+#'
 #' # Partial function evaluation - a function that returns the first three
 #' # elements of an object.
 #' head3 <- fapply(head, n=3)
 #'
-#' # Function composition - a function that returns the fifth through the 
+#' # Function composition - a function that returns the fifth through the
 #' # 10th element of an object using the head and tail functions.
 #' head_1_to_10 <- fapply(head, n=10)
 #' head_5_to_10 <- fapply(tail, x=head_1_to_10(x))
@@ -57,19 +57,14 @@ fapply <- function(func, ...) {
     if (inherits(args[[i + arg_offset]], "name")) {
       # If it's a name, then see what it is.
       obj <- eval(args[[i + arg_offset]])
-      if (!is.function(obj)) {
-        # It's not a function. We can set the evaluated object to the 
-        # argument.
-        args[[i + arg_offset]] <- obj
-      } else {
+      if (is.function(obj)) {
         # It's a function. Assume it's the one we apply to the specified
         # parameter before do.call.
         args[[i + arg_offset]] <- parse(text=
-          paste0(as.character(args[[i + arg_offset]]), "(", 
+          paste0(as.character(args[[i + arg_offset]]), "(",
             names(args)[i + arg_offset], ")"))
-        
+
       }
-      #args[[i + arg_offset]] <- fapply(eval(args[[i + arg_offset]]))
     }
     if (inherits(args[[i + arg_offset]], "function")) {
       fun_arg_list_str <- paste(fun_arg_list_str,
@@ -83,7 +78,7 @@ fapply <- function(func, ...) {
                names(args)[i + arg_offset], "']] <- ",
                as.expression(args[[i + arg_offset]])), sep=";")
 
-    } 
+    }
     tmpfun <- function(){}
     try_eval <- try(eval(args[[i + arg_offset]]), silent=TRUE)
     if (class(try_eval) == "function") {
