@@ -32,8 +32,7 @@
     eval(parse(text=paste0("rhs(", as.character(as.expression(args$lhs)), ")")))
   } else {
     eval(parse(text=paste0("fapply(rhs, ", rhs_first_arg_name, "=lhs(",
-                           lhs_first_arg_name, "))")))
+                           rhs_first_arg_name, "))")))
   }
 }
-
 
