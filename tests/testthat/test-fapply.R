@@ -65,7 +65,7 @@ test_that("Piping operator works for applying composed function to data object."
 })
 
 test_that("Piping operator works to pipe multiple arguments via a list.", {
-  val <- list(x = iris, n = 3) %>% 
+  val <- list(x = iris, n = 3) %>%
     (fapply(tail, x=x$x, n=x$n) %>% fapply(head, n=2))
   expect_equal(iris[148:149,], val)
 })
@@ -76,4 +76,12 @@ test_that("We're not evaluating variables at the wrong time.", {
   fapply(head, x=tail(x))
 })
 
-
+test_that("Can compose functions to pass data into matrix().", {
+  set.seed(1)
+  gendata <- fapply(rnorm, mean = 0)
+  v <- fapply(matrix, ncol = 2, data=gendata(data))
+  vals <- v(200)
+  set.seed(1)
+  truevals <- matrix(rnorm(200, mean = 0), ncol=2)
+  expect_equal(truevals, val)
+})
