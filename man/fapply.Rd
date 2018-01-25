@@ -4,7 +4,7 @@
 \alias{fapply}
 \title{Generalized Function Composition and Partial Function Evaluation}
 \usage{
-fapply(func, ...)
+fapply(func, ..., env = baseenv())
 }
 \arguments{
 \item{func}{the function to be modified.}

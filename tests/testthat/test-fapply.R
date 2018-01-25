@@ -53,8 +53,7 @@ test_that("Function composition with anonymous functions works 2.", {
 })
 
 test_that("Piping operator works for function composition.",{
-  v <- fapply(head, n = ncol(x)) %>%
-    fapply(tail, n=2) %>% fapply(nrow)
+  v <- fapply(head, n = ncol(x)) %>% fapply(tail, n=2) %>% nrow
   expect_equal(2, v(iris))
 })
 
@@ -73,7 +72,7 @@ test_that("Piping operator works to pipe multiple arguments via a list.", {
 test_that("We're not evaluating variables at the wrong time.", {
   # TODO: fix this.
   x <- iris
-  fapply(head, x=tail(x))
+  expect_equal(fapply(head, x=tail(x))(x), tail(x))
 })
 
 test_that("Can compose functions to pass data into matrix().", {

@@ -25,7 +25,7 @@
 #' head_5_to_10 <- fapply(tail, x=head_1_to_10(x))
 #' head_5_to_10(iris)
 #' @export
-fapply <- function(func, ...) {
+fapply <- function(func, ..., env=baseenv()) {
   f <- function() {}
   args <- as.list(match.call())
   fun_arg_list_str <- "fun_arg_list <- list();"
@@ -41,9 +41,9 @@ fapply <- function(func, ...) {
                     "      fun_arg_list[[names(args)[i]]] <- args[[i]] }; ")
 
   for(i in seq_len(length(args) - arg_offset))  {
-    # If it's a call, see if it's a function declaration.
+#    # If it's a call, see if it's a function declaration.
     if (inherits(args[[i + arg_offset]], "call")) {
-      obj <- try(eval(args[[i + arg_offset]]), silent=TRUE)
+      obj <- try(eval(args[[i + arg_offset]], envir=env), silent=TRUE)
       # If we can't evaluate then leave it alone.
       if (!inherits(obj, "try-error")) {
         if (is.function(obj)) {
