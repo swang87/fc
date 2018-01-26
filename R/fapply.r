@@ -115,7 +115,11 @@ fapply <- function(func, ..., env=baseenv()) {
   }
   body_str <- paste0("{", fun_arg_list_str, ";",
                      body_str)
-  formals(f) <- formals(func)[union(spec_args, other_args)]
+  if (is.primitive(func)) {
+    formals(f) <- formals(args(func))[union(spec_args, other_args)]
+  } else {
+    formals(f) <- formals(func)[union(spec_args, other_args)]
+  }
   fun_line <- paste0( "do.call(", deparse(args$func),", fun_arg_list)")
   body_str <- paste0(body_str, fun_line, "}")
   body(f) <- parse(text=body_str)
