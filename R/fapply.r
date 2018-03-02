@@ -6,6 +6,7 @@
 #'
 #' @param func the function to be modified.
 #' @param ... the function modifiers (see Details).
+#' @param .dots additional arguments, possibly results of function evaluations, where the evaluation should only occur once
 #' @return A modified function based on the parameters provided.
 #' @details The 'fapply' function works by capturing function modifier
 #' expressions in a list, which can be applied to the specified function
@@ -25,80 +26,83 @@
 #' head_5_to_10 <- fapply(tail, x=head_1_to_10(x))
 #' head_5_to_10(iris)
 #' @export
-fapply <- function(func, ...) {
+fapply <- function(func, ..., .dots = NULL) {
   f <- function() {}
   args <- as.list(match.call())
-  fun_arg_list_str <- "fun_arg_list <- list();"
-  arg_offset <- 2
   fun_args <- names(formals(func))
   spec_args <- c()
+  which_args <- 3:length(args)
 
   # pass additional arguments ... to list
-  body_str <- paste("args <- as.list(match.call());",
-                    "if (length(args) > 1) ",
-                    "  for(i in 2:length(args)) {",
-                    "    if (!(names(args)[i] %in% names(fun_arg_list)))",
-                    "      fun_arg_list[[names(args)[i]]] <- args[[i]] }; ")
+  body_str <- ""
 
-  for(i in seq_len(length(args) - arg_offset))  {
-
-    if (is_anon_function(args[[i+arg_offset]])) {
-      fun_arg_list_str <- paste(fun_arg_list_str,
-                                paste0("fun_arg_list[['",
-                                       names(args)[i + arg_offset], "']] <- do.call(",
-                                       as.expression(args[[i + arg_offset]]),
-                                       ", list(",
-                                       extractAnonFunVars(args[[i+arg_offset]]),
-                                       "=",
-                                       names(args)[i + arg_offset],
-                                       "))"),
-                                sep=";")
-      tmpfunvars <- extractAnonFunVars(args[[i+arg_offset]])
-    } else {
-      fun_arg_list_str <- paste(fun_arg_list_str,
-                                paste0("fun_arg_list[['",
-                                       names(args)[i + arg_offset], "']] <- ",
-                                       as.expression(args[[i + arg_offset]])), sep=";")
-      tmpfun <- function(){}
-      body(tmpfun) <- parse(text=
-                              paste0("{",
-                                     as.character(
-                                       as.expression(args[[i + arg_offset]])),
-                                     "}"))
-      tmpfunvars <- findGlobals(tmpfun, merge=FALSE)$variables
-    }
-    if (names(args)[i+arg_offset] %in% tmpfunvars) {
-      spec_args <- c(spec_args, names(args)[i+arg_offset])
-    }
+  if (".dots" %in% names(args)) {
+    body_str <- paste(body_str,
+                      paste0(".dots <- ",
+                             as.character(as.expression(args$.dots)),
+                             ";"),
+                      sep=";")
+    which_args <- setdiff(which_args, which(names(args) == ".dots"))
   }
+  fun_arg_list <- c()
+  if (length(args) > 2)
+    for(i in which_args)  {
+      argVal <- args[[i]]
+      argName <- names(args)[i]
+      argChar <- as.character(as.expression(argVal))
+      if (is_anon_function(argVal)) { # if anon function
+        body_str <- paste0(body_str,
+                          paste0(".", argName, " <- ",
+                                 argChar),";")
+        tmpfunvars <- extractAnonFunVars(argVal)
+        fun_arg_list <- c(fun_arg_list, paste0(argName, " = .",
+                                               argName,
+                                               "(",
+paste(tmpfunvars, collapse=","),")"))
+
+      } else {
+        fun_arg_list <- c(fun_arg_list, paste(argName, " = ",
+                                              argChar))
+        tmpfun <- function(){}
+        body(tmpfun) <- parse(text=
+                                paste0("{", argChar, "}"))
+        tmpfunvars <- findGlobals(tmpfun, merge=FALSE)$variables
+      }
+      if (argName %in% tmpfunvars) {
+        spec_args <- c(spec_args, argName)
+      }
+    }
 
 
-  def_args <- paste0(names(args)[-(1:arg_offset)], "=",
-    names(args)[-(1:arg_offset)], collapse=", ")
+  def_args <- paste0(names(args)[which_args], "=",
+    names(args)[which_args], collapse=", ")
   other_args <- setdiff(names(formals(func)), names(args))
 
   if (length(other_args) > 0) {
     # add other args
     other_arg_vec <- unlist(vapply(other_args, function(a) {
       if (a != "...")
-        paste0("fun_arg_list[['",
-               a, "']] <- ",
-               a)
+        paste0(a, "=", a)
       else as.character(NA)
     }, ""))
     other_arg_vec <- other_arg_vec[!is.na(other_arg_vec)]
-    fun_arg_list_str <- paste(fun_arg_list_str, ";",
-                              paste(other_arg_vec,
-                              collapse=";"))
+    fun_arg_list <- c(other_arg_vec, fun_arg_list)
   }
-  body_str <- paste0("{", fun_arg_list_str, ";",
+  body_str <- paste0("{",
                      body_str)
   if (is.primitive(func)) {
     formals(f) <- formals(args(func))[union(spec_args, other_args)]
   } else {
     formals(f) <- formals(func)[union(spec_args, other_args)]
   }
-  fun_line <- paste0( "do.call(", deparse(args$func),", fun_arg_list)")
+  # run function
+  if(is_anon_function(args$func)) {
+    fun_line <- paste0(".main_func <- ", as.character(as.expression(args$func)), ";",
+                       ".main_func(", paste(fun_arg_list,
+                                                                                                           collapse=","), ")")
+  } else
+    fun_line <- paste0(args$func,"(", paste(fun_arg_list,
+                                          collapse=","), ")")
   body_str <- paste0(body_str, fun_line, "}")
   body(f) <- parse(text=body_str)
   environment(f) <- parent.frame()
@@ -117,9 +121,6 @@ extractAnonFunVars <- function(expr) {
   # convert arguments to list
   argsList <- regmatches(argsString, regexpr("=", argsString), invert = TRUE)
   argNames <- sapply(argsList, function(x) x[1])
-#   argVals <- sapply(argsList, function(x) ifelse(is.na(x[2]), 1, x[2]))
-# browser()
-#   argsList <- setNames(list(argVals), argNames)
   return(argNames)
 }
 

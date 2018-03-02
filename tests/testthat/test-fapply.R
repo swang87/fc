@@ -10,7 +10,13 @@ test_that("Function composition works.", {
   head_5_to_10 <- fapply(tail, x=head_1_to_10(x))
   expect_equal(head_5_to_10(iris), iris[5:10,])
 })
-
+test_that("Allow passing in random parameters, sampled once.", {
+  set.seed(5)
+  v <- runif(10)
+  set.seed(5)
+  sumtwice <- fapply(sum, x=.dots, y=.dots, .dots = runif(10))
+  expect_equal(sumtwice(), sum(v)*2)
+})
 test_that("Function composition and partial function evaluation works.", {
   head_1_to_10 <- fapply(head, n=10)
   head_9_to_10 <- fapply(tail, x=head_1_to_10(x), n=2)
@@ -41,7 +47,6 @@ test_that(
     ncp <- 4
     expect_equal(rf_samples, rf(10, df1, df2, ncp))
   })
-
 test_that("Function composition with anonymous functions works.", {
   first <- fapply(head, x = function(x) x[1,])
   expect_equal(iris[1,], first(iris))
@@ -57,17 +62,7 @@ test_that("Piping operator works for function composition.",{
   expect_equal(2, v(iris))
 })
 
-# test_that("Piping operator works for applying composed function to data object.",{
-#   val <- iris %>% (fapply(head, n = ncol(x)) %>%
-#     fapply(tail, n=2) %>% fapply(nrow))
-#   expect_equal(2, val)
-# })
-#
-# test_that("Piping operator works to pipe multiple arguments via a list.", {
-#   val <- list(x = iris, n = 3) %>%
-#     (fapply(tail, x=x$x, n=x$n) %>% fapply(head, n=2))
-#   expect_equal(iris[148:149,], val)
-# })
+
 
 test_that("We're not evaluating variables at the wrong time.", {
   # TODO: fix this.

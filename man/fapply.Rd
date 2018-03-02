@@ -4,12 +4,14 @@
 \alias{fapply}
 \title{Generalized Function Composition and Partial Function Evaluation}
 \usage{
-fapply(func, ..., env = baseenv())
+fapply(func, ..., .dots = NULL)
 }
 \arguments{
 \item{func}{the function to be modified.}
 
 \item{...}{the function modifiers (see Details).}
+
+\item{.dots}{additional arguments, possibly results of function evaluations, where the evaluation should only occur once}
 }
 \value{
 A modified function based on the parameters provided.
@@ -38,3 +40,4 @@ head_1_to_10 <- fapply(head, n=10)
 head_5_to_10 <- fapply(tail, x=head_1_to_10(x))
 head_5_to_10(iris)
 }
+
