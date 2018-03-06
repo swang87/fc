@@ -5,6 +5,20 @@ test_that("Partial function evaluation works.", {
   expect_equal(head3(iris), iris[1:3,])
 })
 
+# Shouldn't the following two things work?
+fapply( fapply(tail, n=2), x=fapply(head, n=10)(x) )
+
+fapply( fapply(tail, n=2), x=.dots, .dots=fapply(head, n=10)(x) )
+
+test_that("fapply argument modifier works.", {
+  # Note that this...
+  expect_equal(fapply(tail, x=fapply(head, n=10)(x) )(iris), iris[5:10,] )
+  # will probably be slower than
+  # hh <- fapply(head, n=10)
+  # fapply(tail, x=hh(x))(iris)
+  # since fapply is in the body of the returned function.
+})
+
 test_that("Function composition works.", {
   head_1_to_10 <- fapply(head, n=10)
   head_5_to_10 <- fapply(tail, x=head_1_to_10(x))

@@ -40,4 +40,3 @@ head_1_to_10 <- fapply(head, n=10)
 head_5_to_10 <- fapply(tail, x=head_1_to_10(x))
 head_5_to_10(iris)
 }
-
