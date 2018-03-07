@@ -71,10 +71,6 @@ test_that("Function composition with anonymous functions works 2.", {
   expect_equal(iris[1,], first(iris))
 })
 
-test_that("Piping operator works for function composition.",{
-  v <- fapply(head, n = ncol(x)) %>% fapply(tail, n=2) %>% nrow
-  expect_equal(2, v(iris))
-})
 
 
 

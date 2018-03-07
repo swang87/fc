@@ -45,6 +45,7 @@ fapply <- function(func, ..., .dots = NULL) {
     which_args <- setdiff(which_args, which(names(args) == ".dots"))
   }
   fun_arg_list <- c()
+
   if (length(args) > 2)
     for(i in which_args)  {
       argVal <- args[[i]]
@@ -100,6 +101,12 @@ paste(tmpfunvars, collapse=","),")"))
     fun_line <- paste0(".main_func <- ", as.character(as.expression(args$func)), ";",
                        ".main_func(", paste(fun_arg_list,
                                                                                                            collapse=","), ")")
+  } else if (is_fapply_function(args$func)) { # first arg fapply
+    body_str <- paste0(body_str,
+                       paste0(".firstfun <- ",
+                              as.character(as.expression(args$func))),";")
+    fun_line <- paste0(".firstfun(", paste(fun_arg_list,
+                                            collapse=","), ")")
   } else
     fun_line <- paste0(args$func,"(", paste(fun_arg_list,
                                           collapse=","), ")")
@@ -109,6 +116,10 @@ paste(tmpfunvars, collapse=","),")"))
   f
 }
 
+is_fapply_function <- function(expr) {
+  substr(as.character(as.expression(expr)),
+          1, 7) == "fapply("
+}
 is_anon_function <- function(expr) {
   substr(as.character(as.expression(expr)),
          1, 9) == "function("

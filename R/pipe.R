@@ -24,15 +24,11 @@
 #' @export
 `%>%` <- function(lhs, rhs) {
   args <- as.list(match.call())
-  lhs_first_arg_name <- names(formals(lhs))[1]
-  rhs_first_arg_name <- names(formals(rhs))[1]
-  # It's fapply all the way down.
-
-  if (is.null(lhs_first_arg_name)) {
-    eval(parse(text=paste0("rhs(", as.character(as.expression(args$lhs)), ")")))
-  } else {
-    eval(parse(text=paste0("fapply(rhs, ", rhs_first_arg_name, "=lhs(",
-                           rhs_first_arg_name, "))")))
-  }
+  lhsChar <- as.character(as.expression(args$lhs))
+  rhsChar <- as.character(as.expression(args$rhs))
+  rhsChar <- gsub("(.*\\(.*\\))\\(.*\\)", "\\1", rhsChar)
+  rhs_first_arg_name <- names(formals(eval(parse(text=rhsChar))))[1]
+  fun_line <- paste0("fapply(", rhsChar, ",", rhs_first_arg_name, "= (",
+                    lhsChar, ")(", rhs_first_arg_name, "))")
+  eval(parse(text=fun_line))
 }
-
