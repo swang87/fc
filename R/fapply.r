@@ -50,7 +50,8 @@ fapply <- function(func, ..., .dots = NULL) {
     for(i in which_args)  {
       argVal <- args[[i]]
       argName <- names(args)[i]
-      argChar <- as.character(as.expression(deparse(argVal)))
+      argChar <- as.character(as.expression(paste(deparse(argVal),
+                                                  collapse="")))
       if (is_anon_function(argVal)) { # if anon function
         body_str <- paste0(body_str,
                           paste0(".", argName, " <- ",

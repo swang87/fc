@@ -11,16 +11,23 @@ test_that("Function composition and partial function evaluation works.", {
   head_9_to_10 <- fapply(head, n=10) %>% fapply(tail, n=2)
   expect_equal(head_9_to_10(iris), iris[9:10,])
 })
-test_that("Function composition and partial function evaluation works 2.",{
-  v <- fapply(head, n = ncol(x)) %>% fapply(tail, n=2) %>% nrow
-  expect_equal(2, v(iris))
-})
 
-test_that("Function composition and partial function evaluation works 3.", {
+test_that("Function composition and partial function evaluation works 2.", {
   `%>%` <- fapply::`%>%`
   head_9th <- fapply(head, n=10) %>%
     fapply(tail, n=2) %>%
     fapply(head, n=1)
   expect_equal(head_9th(iris), iris[9,])
+})
+
+test_that("Piping with string values as argument parameters works.", {
+  `%>%` <- fapply::`%>%`
+  x <- c("    <td>D159</td>      ", "    <td>B240</td>      ",
+         "    <td>A166</td>      ", "    <td>A59</td>      ")
+  search_sub_trim_f <- fapply(grep, pattern="A", value=TRUE) %>%
+    fapply(gsub, pattern=".*>(.*)<.*", replacement = "\\1") %>% trimws
+  expect_equal(search_sub_trim_f(x),
+               trimws(gsub(grep(x, pattern="A", value=TRUE),
+                           pattern=".*>(.*)<.*", replacement = "\\1")))
 })
 
