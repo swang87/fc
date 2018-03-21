@@ -1,4 +1,4 @@
-#' @export
+#' @importFrom codetools makeCodeWalker walkCode
 language_properties <- function(expr){
   functions <- NULL
   variables <- NULL
