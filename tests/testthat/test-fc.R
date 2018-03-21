@@ -5,18 +5,14 @@ test_that("Partial function evaluation works.", {
   expect_equal(head3(iris), iris[1:3,])
 })
 
-# Shouldn't the following two things work?
-fc( fc(tail, n=2), x=fc(head, n=10)(x) )
-
-fc( fc(tail, n=2), x=.dots, .dots=fc(head, n=10)(x) )
+fc( fc(tail, n=2), x=head(y) )
 
 test_that("fc argument modifier works.", {
-  # Note that this...
+  # You can do this...
   expect_equal(fc(tail, x=fc(head, n=10)(x) )(iris), iris[5:10,] )
-  # will probably be slower than
-  # hh <- fc(head, n=10)
-  # fc(tail, x=hh(x))(iris)
-  # since fc is in the body of the returned function.
+
+  # But this is faster...
+  fc(tail, x=head(x, n=10))(iris)
 })
 
 test_that("Function composition works.", {
@@ -24,6 +20,7 @@ test_that("Function composition works.", {
   head_5_to_10 <- fc(tail, x=head_1_to_10(x))
   expect_equal(head_5_to_10(iris), iris[5:10,])
 })
+
 test_that("Allow passing in random parameters, sampled once.", {
   set.seed(5)
   v <- runif(10)
@@ -34,6 +31,7 @@ test_that("Allow passing in random parameters, sampled once.", {
 #  sumtwice <- fc(sum, x=.dots, y=.dots, .dots = runif(10))
 #  expect_equal(sumtwice(), sum(v)*2)
 })
+
 test_that("Function composition and partial function evaluation works.", {
   head_1_to_10 <- fc(head, n=10)
   head_9_to_10 <- fc(tail, x=head_1_to_10(x), n=2)
@@ -54,15 +52,15 @@ test_that("Generalized function composition works.", {
 test_that(
   "Generalized function composition and partial function evaluation work",
   {
-    set.seed(1)
     rand_f <- fc(rf, df1=abs(round(rnorm(n, 20))),
                      df2=abs(round(rnorm(n, 10))), ncp=4)
-    rf_samples <- rand_f(10)
     set.seed(1)
-    df1 <- abs(round(rnorm(10, 20)))
-    df2 <- abs(round(rnorm(10, 10)))
-    ncp <- 4
-    expect_equal(rf_samples, rand_f(10))
+    fc_rf_samples <- rand_f(10)
+    set.seed(1)
+    rf_samples <- rf(10, 
+                     abs(round(rnorm(10, 20))), 
+                     abs(round(rnorm(10, 10))), ncp=4)
+    expect_equal(fc_rf_samples, rf_sampes)
   })
 
 test_that("Function composition with anonymous functions works.", {
@@ -71,7 +69,7 @@ test_that("Function composition with anonymous functions works.", {
 })
 
 test_that("Function composition with anonymous functions works 2.", {
-  first <- fc(function(x) x[1,], x = function(x) x[1:16, ])
+  first <- fc(function(x) x[1,], x=x)
   expect_equal(iris[1,], first(iris))
 })
 
@@ -82,9 +80,10 @@ test_that("We're not evaluating variables at the wrong time.", {
 })
 
 test_that("Can compose functions to pass data into matrix().", {
-  set.seed(1)
+  # matrix is kind of an exception.
   gendata <- fc(rnorm, mean = 0)
-  v <- fc(matrix, ncol = 2, data=gendata(data))
+  v <- fc(matrix, data=gendata(n), ncol=2, nrow=n/2)
+  set.seed(1)
   vals <- v(200)
   set.seed(1)
   truevals <- matrix(rnorm(200, mean = 0), ncol=2)
@@ -92,6 +91,10 @@ test_that("Can compose functions to pass data into matrix().", {
 })
 
 test_that("Can compose functions with different primary arguments.", {
+  # You can do this...
   f <- fc(summary, object = fc(tail, x=head(x))(object))
+
+  # but this is faster...
+  f <- fc(summary, object=tail(head(x)))
   expect_equal(f(iris), summary(tail(head(iris))))
 })
