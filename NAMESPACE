@@ -2,4 +2,7 @@
 
 export("%>%")
 export(fapply)
+export(fc)
+export(get_variable_names)
+export(language_properties)
 importFrom(codetools,findGlobals)

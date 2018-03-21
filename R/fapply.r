@@ -1,3 +1,124 @@
+
+get_all_symbols <- function(a) {
+  ret <- c()
+  for (i in 1:length(a)) {
+    lp <- language_properties(a[[i]])
+    ret <- c(ret, c(lp$functions, lp$variables))
+  }
+  ret
+}
+
+make_anon_func_name <- function(a) {
+  symbols <- get_all_symbols(a)
+  ret <- "internal_anon_func"
+  i <- 1
+  while(ret %in% symbols) {
+    new_ret_name <- paste0(ret, "_", i)
+    if ( !(new_ret_name %in% symbols) ) {
+      ret <- new_ret_name
+      break
+    }
+    i <- i + 1
+  }
+  ret
+}
+
+args_to_string <- function(args) {
+  ret <- c()
+  for(i in seq_len(length(args))) {
+    if (length(args[[i]]) == 1 && as.character(args[[i]]) == "") {
+      ret <- c(ret, names(args)[i])
+    } else {
+      ret <- c(ret, paste(names(args)[i], as.character(args[i]), sep=" = "))
+    }
+  }
+  ret
+}
+
+unbound_args <- function(args) {
+  ub <- unlist(lapply(args, 
+               function(x) length(x) == 1 && as.character(x) == ""))
+  names(args)[ub]
+}
+
+make_function <- function(args, body, env) {
+  f <- function() {}
+  formals(f) <- args
+  body(f) <- body
+  environment(f) <- env
+  f
+} 
+
+#' @export
+fc <- function(func, ...) {
+  # Get the arguments.
+  arg_list <- as.list(match.call())
+ 
+  # Create the return function body and environment. 
+  ret_fun_body_string <- ""
+  ret_fun_env <- new.env()
+
+
+  # If func is an fapply or an anonymous function, then evaluate it. 
+  # We'll keep it in the return function's evironment so we can use it.
+  anon_func <- FALSE
+  if (is_fapply_function(arg_list$func) || is_anon_function(arg_list$func)) {
+    anon_func_name <- make_anon_func_name(arg_list[3:length(arg_list)])
+    ret_fun_env[[anon_func_name]] <- arg_list$func
+    func_name <- anon_func_name
+    func_args<- formals(ret_fun_env[[anon_func_name]])
+    anon_func <- TRUE
+  } else {
+    func_name <- as.character(arg_list[[2]])
+    fe <- eval(arg_list[[2]])
+    if (!is.function(fe)) {
+      stop("The first argument must be a function.")
+    }
+    func_args <- formals(fe)
+  }
+
+  # Get rid of ... Is there a case where we should keep them?
+  func_args <- func_args[ names(func_args) != "..." ]
+
+  ################################
+  # Process the "..." arguments.
+  ################################
+  
+  arg_formals <- arg_list[-(1:2)] 
+
+  if (any(names(arg_formals) == "")) {
+    stop("All parameter arguments must be named.")
+  }
+
+  # pevn - Parameter expression variables names. The variables that show
+  # up on the right side of the expressions in ... They must appear
+  # as parameters in the returned function.
+  dot_names <- lapply(arg_formals, get_variable_names)
+  pevn <- unlist(dot_names)
+
+  
+  # Which formals are we overwriting?
+  overwrite_args <- intersect(names(arg_formals), names(func_args))
+  func_args[overwrite_args] <- arg_formals[overwrite_args]
+
+  # Which formals need to be added?
+  new_args <- setdiff(names(arg_formals), names(func_args))
+  func_args<- c(func_args, arg_formals[new_args])
+
+  ret_fun_body_string <- paste0(func_name, "(", 
+    paste(args_to_string(func_args), collapse=", "), ")")
+
+  ret_fun_arg_names <- gsub("$", "=", union(unbound_args(func_args), pevn),
+                            perl=TRUE)
+  
+  ret_fun_arg <- eval(parse(text=
+    paste0("alist(", paste(ret_fun_arg_names, collapse=","), ")")))
+ 
+  make_function(ret_fun_arg, 
+                as.call(c(as.name("{"), parse(text=ret_fun_body_string))),
+                ret_fun_env)
+}
+
 #' @title Generalized Function Composition and Partial Function Evaluation
 #'
 #' @description 'fapply' is used to modify functions. It can be used to
