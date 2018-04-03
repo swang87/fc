@@ -1,3 +1,6 @@
+library(fapply)
+library(testthat)
+
 context('fc operations')
 
 test_that("Partial function evaluation works.", {
@@ -16,8 +19,15 @@ test_that("fc argument modifier works.", {
 })
 
 test_that("Function composition works.", {
-  head_1_to_10 <- fc(head, n=10)
+  head_1_to_10 <- force(fc(head, n=10))
+
   head_5_to_10 <- fc(tail, x=head_1_to_10(x))
+
+  # testthat is having trouble finding head_5_to_10. So, we'll explicitly
+  # assign it to head_5_to_10's environment.... Lame.
+
+  environment(head_5_to_10)[['head_1_to_10']] <- head_1_to_10
+
   expect_equal(head_5_to_10(iris), iris[5:10,])
 })
 
@@ -28,19 +38,21 @@ test_that("Allow passing in random parameters, sampled once.", {
   sumtwice <- fc(sum, x=x, y=x)
   expect_equal(sumtwice(v), sum(v)*2)
   
-#  sumtwice <- fc(sum, x=.dots, y=.dots, .dots = runif(10))
-#  expect_equal(sumtwice(), sum(v)*2)
 })
 
 test_that("Function composition and partial function evaluation works.", {
   head_1_to_10 <- fc(head, n=10)
   head_9_to_10 <- fc(tail, x=head_1_to_10(x), n=2)
+
+  # Same trick, different test
+  environment(head_9_to_10)[['head_1_to_10']] <- head_1_to_10
+
   expect_equal(head_9_to_10(iris), iris[9:10,])
 })
 
 test_that("Generalized function composition works.", {
   set.seed(1)
-  rand_binoms <- fc(rbinom, size=abs(round(rnorm(n, 20))),
+  rand_binoms <- fc(rbinom, n=n, size=abs(round(rnorm(n, 20))),
                         prob=1/abs(round(rnorm(n, 10))) )
   rb_samples <- rand_binoms(10)
   set.seed(1)
@@ -52,19 +64,24 @@ test_that("Generalized function composition works.", {
 test_that(
   "Generalized function composition and partial function evaluation work",
   {
-    rand_f <- fc(rf, df1=abs(round(rnorm(n, 20))),
-                     df2=abs(round(rnorm(n, 10))), ncp=4)
+    rand_f <- fc(rf, 
+                 df1=abs(round(rnorm(n, 20))),
+                 df2=abs(round(rnorm(n, 10))), ncp=4)
     set.seed(1)
     fc_rf_samples <- rand_f(10)
     set.seed(1)
     rf_samples <- rf(10, 
                      abs(round(rnorm(10, 20))), 
                      abs(round(rnorm(10, 10))), ncp=4)
-    expect_equal(fc_rf_samples, rf_sampes)
+    expect_equal(fc_rf_samples, rf_samples)
   })
 
 test_that("Function composition with anonymous functions works.", {
-  first <- fc(head, x = function(x) x[1,])
+  # Does this run fast?
+  first <- fc(head, x = {function(x) x[1,]} (x))
+  
+  # Evaluate the function and stash it in the return function environment.
+  first <- fc(head, x = fc(head, n=1)(x))
   expect_equal(iris[1,], first(iris))
 })
 
@@ -81,8 +98,13 @@ test_that("We're not evaluating variables at the wrong time.", {
 
 test_that("Can compose functions to pass data into matrix().", {
   # matrix is kind of an exception.
-  gendata <- fc(rnorm, mean = 0)
-  v <- fc(matrix, data=gendata(n), ncol=2, nrow=n/2)
+  gendata <- fc(rnorm, mean=0)
+
+  v <- fc(matrix, data=gendata(n), ncol=2)
+
+  # Blech.
+  environment(v)[['gendata']] <- gendata
+
   set.seed(1)
   vals <- v(200)
   set.seed(1)

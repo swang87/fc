@@ -1,3 +1,5 @@
+
+# language_properties(parse(text="tail(y, n=3)")[[1]))
 #' @importFrom codetools makeCodeWalker walkCode
 language_properties <- function(expr){
   functions <- NULL
@@ -18,6 +20,7 @@ language_properties <- function(expr){
     leaf = function(e, w ){
       # deal with argument list of functions
       if( typeof(e) == "pairlist" ){
+        browser()
         stop("Don't know what to do.")
         w$call.list( e, w )
       } else if (typeof(e) == "symbol") {
@@ -27,8 +30,8 @@ language_properties <- function(expr){
     },
     call.list = function( e, w ){
       for( a in as.list(e) ){
-        if( !missing( a) ){
-          walkCode( a, w )
+        if(!missing(a) ){
+          walkCode(a, w)
         }
       }
     },
