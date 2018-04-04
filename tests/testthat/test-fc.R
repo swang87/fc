@@ -120,3 +120,6 @@ test_that("Can compose functions with different primary arguments.", {
   f <- fc(summary, object=tail(head(x)))
   expect_equal(f(iris), summary(tail(head(iris))))
 })
+
+fc(gsub, pattern=".*>(.*)<.*", replacement = "\\1")
+
