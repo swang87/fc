@@ -1,5 +1,5 @@
 
-# language_properties(parse(text="tail(y, n=3)")[[1]))
+# language_properties(parse(text="tail(y, n=3)")[[1]]))
 #' @importFrom codetools makeCodeWalker walkCode
 language_properties <- function(expr){
   functions <- NULL
