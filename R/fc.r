@@ -34,6 +34,9 @@ args_to_string <- function(args) {
     if (length(args[[i]]) == 1 && as.character(args[[i]]) == "") {
       ret <- c(ret, names(args)[i])
     } else {
+      if (is.character(args[[i]])) {
+        args[[i]] <- deparse(args[[i]])
+      } 
       ret <- c(ret, paste(names(args)[i], as.character(args[i]), sep=" = "))
     }
   }
@@ -66,7 +69,6 @@ fc <- function(func, ...) {
 
   # If func is an fc or an anonymous function, then evaluate it. 
   # We'll keep it in the return function's evironment so we can use it.
-  anon_func <- FALSE
   if (is_fc_function(arg_list$func) || is_anon_function(arg_list$func)) {
     anon_func_name <- make_anon_func_name(arg_list[3:length(arg_list)])
     ret_fun_env[[anon_func_name]] <- eval(arg_list$func)
@@ -109,8 +111,8 @@ fc <- function(func, ...) {
       # Stash the function in the return function environement.
       ret_fun_env[[anon_func_name]] <- 
         eval(parse(text=as.character(arg_formals[[i]][1])))
-      arg_formals[[i]] <- paste0(anon_func_name, "(", 
-        paste(arg_formals[[i]][-1], collapse=", "), ")")
+      arg_formals[[i]] <- parse(text=(paste0(anon_func_name, "(", 
+        paste(arg_formals[[i]][-1], collapse=", "), ")")))[[1]]
     }
   }
 
