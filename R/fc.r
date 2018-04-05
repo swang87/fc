@@ -82,6 +82,7 @@ fc <- function(func, ...) {
     }
     func_formals <- formals(fe)
   }
+
   ff_dots <- which(names(func_formals) == "...")
   if (length(ff_dots) > 0) {
     func_formals <- func_formals[-which(names(func_formals) == "...")]
@@ -129,7 +130,7 @@ fc <- function(func, ...) {
   ret_fun_arg_names <- gsub("$", "=", union(unbound_args(arg_formals), pevn),
                             perl=TRUE)
   ret_fun_arg_names <- union(
-    gsub("$", "=", setdiff(unbound_args(func_formals), names(pevn))), 
+    gsub("$", "=", setdiff(formals_from_func, names(pevn))), 
     ret_fun_arg_names)
   ret_fun_arg <- eval(parse(text=
     paste0("alist(", paste(ret_fun_arg_names, collapse=","), ")")))
