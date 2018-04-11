@@ -1,7 +1,8 @@
 
+# We should be stripping outer left perens.
 is_fc_function <- function(expr) {
-  substr(as.character(as.expression(expr)),
-          1, 3) == "fc("
+  # Remove open perens at the beginning.
+  substr(gsub("^\\(+", "", as.character(as.expression(expr))), 1, 3) == "fc("
 }
 
 get_all_symbols <- function(a) {
@@ -14,7 +15,7 @@ get_all_symbols <- function(a) {
 }
 
 make_anon_func_name <- function(a) {
-  symbols <- get_all_symbols(a)
+  symbols <- c(get_all_symbols(a), names(a))
   ret <- "internal_anon_func"
   i <- 1
   while(ret %in% symbols) {
@@ -77,7 +78,8 @@ fc <- function(func, ...) {
 
     # Now create an anonymous function name and function and stash 
     # it in the function's new environment.
-    anon_func_name <- make_anon_func_name(arg_list[3:length(arg_list)])
+    anon_func_name <- make_anon_func_name(
+      c(arg_list[3:length(arg_list)], as.list(ret_fun_env)))
     ret_fun_env[[anon_func_name]] <- eval(arg_list$func)
     func_name <- anon_func_name
     func_formals <- formals(ret_fun_env[[anon_func_name]])
@@ -120,9 +122,14 @@ fc <- function(func, ...) {
       anon_func_name <- make_anon_func_name(
         c(arg_list[3:length(arg_list)], as.list(ret_fun_env)))
 
-      # Stash the function in the return function environement.
+      # Stash the function in the return function environment.
       ret_fun_env[[anon_func_name]] <- 
         eval(parse(text=as.character(arg_formals[[i]][1])))
+      for (j in 2:length(arg_formals[[i]])) {
+        if (is.character(arg_formals[[i]][[j]])) {
+          arg_formals[[i]][j] <- deparse(arg_formals[[i]][j])
+        }
+      }
       arg_formals[[i]] <- parse(text=(paste0(anon_func_name, "(", 
         paste(arg_formals[[i]][-1], collapse=", "), ")")))[[1]]
     }

@@ -5,7 +5,8 @@ library(purrr)
 library(microbenchmark)
 
 
-log_sqrt_f <- function(x) log(sqrt(x))
+# NOTE THAT log(sqrt(x)) runs faster!
+log_sqrt_f <- function(x) log(x=sqrt(x))
 
 log_sqrt_compose <- purrr::compose(log, sqrt)
 `%>%` <- magrittr::`%>%`
@@ -26,6 +27,7 @@ microbenchmark::microbenchmark(log_sqrt_f(10),
 
 
 ### example with something that is not the primary argument
+x <- c("A>2348asd<", "B>234<")
 search_sub_trim <- function(v) trimws(gsub(grep(v, pattern="A", value=TRUE),
                                            pattern=".*>(.*)<.*", replacement = "\\1"))
 `%>%` <- magrittr::`%>%`
@@ -41,6 +43,13 @@ search_sub_trim_f <- fc(grep, pattern="A", value=TRUE) %>%
 
 search_sub_trim_f(x)
 
+
+
+search_sub_trim_fc <- fc(grep, pattern="A", value=TRUE) %>%
+  fc(gsub, pattern=".*>(.*)<.*", replacement = "\\1") %>% trimws
+
+fc(trimws, x=fc(gsub, pattern=".*>(.*)<.*", replacement = "\\1", x= fc(grep, pattern="A", value=TRUE)))
+search_sub_trim_fc(x)
 
 x <- paste0("    <td>", sample(LETTERS[1:5], 10000, replace=TRUE),
 sample(1:250, 10000, replace=TRUE), "</td>      ")

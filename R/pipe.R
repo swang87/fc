@@ -26,9 +26,9 @@
   args <- as.list(match.call())
   lhsChar <- as.character(as.expression(args$lhs))
   rhsChar <- as.character(as.expression(args$rhs))
-  rhsChar <- gsub("(.*\\(.*\\))\\(.*\\)", "\\1", rhsChar)
+#  rhsChar <- gsub("(.*\\(.*\\))\\(.*\\)", "\\1", rhsChar)
   rhs_first_arg_name <- names(formals(eval(parse(text=rhsChar))))[1]
-  fun_line <- paste0("fapply(", rhsChar, ",", rhs_first_arg_name, "= (",
+  fun_line <- paste0("fc(", rhsChar, ",", rhs_first_arg_name, "= (",
                     lhsChar, ")(", rhs_first_arg_name, "))")
   eval(parse(text=fun_line))
 }
