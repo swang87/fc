@@ -10,14 +10,14 @@ log_sqrt_f <- function(x) log(sqrt(x))
 log_sqrt_compose <- purrr::compose(log, sqrt)
 `%>%` <- magrittr::`%>%`
 log_sqrt_pipe <- . %>% sqrt %>% log
-log_sqrt_fapply <- fapply(log, x=sqrt(x))
+log_sqrt_fc <- fc(log, x=sqrt(x))
 
 microbenchmark::microbenchmark(log_sqrt_f(10),
                                log_sqrt_compose(10), log_sqrt_pipe(10),
-                               log_sqrt_fapply(10), times = 10000)
+                               log_sqrt_fc(10), times = 10000)
 library(compiler)
 c1 <- cmpfun(log_sqrt_compose)
-c2 <- cmpfun(log_sqrt_fapply)
+c2 <- cmpfun(log_sqrt_fc)
 c3 <- cmpfun(log_sqrt_pipe)
 
 microbenchmark::microbenchmark(log_sqrt_f(10),
@@ -36,8 +36,8 @@ search_sub_trim_mag(x)
 
 `%>%` <- fapply::`%>%`
 
-search_sub_trim_f <- fapply(grep, pattern="A", value=TRUE) %>%
-  fapply(gsub, pattern=".*>(.*)<.*", replacement = "\\1") %>% trimws
+search_sub_trim_f <- fc(grep, pattern="A", value=TRUE) %>%
+  fc(gsub, pattern=".*>(.*)<.*", replacement = "\\1") %>% trimws
 
 search_sub_trim_f(x)
 

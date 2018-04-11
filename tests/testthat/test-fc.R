@@ -3,6 +3,10 @@ library(testthat)
 
 context('fc operations')
 
+# TODO: check to see that anonymous functions create a new environment
+# in returned functions.
+
+
 test_that("Partial function evaluation works.", {
   head3 <- fc(head, n=3)
   expect_equal(head3(iris), iris[1:3,])
@@ -19,7 +23,7 @@ test_that("fc argument modifier works.", {
 })
 
 test_that("Function composition works.", {
-  head_1_to_10 <- force(fc(head, n=10))
+  head_1_to_10 <- fc(head, n=10)
 
   head_5_to_10 <- fc(tail, x=head_1_to_10(x))
 

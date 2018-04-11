@@ -65,11 +65,18 @@ fc <- function(func, ...) {
  
   # Create the return function body and environment. 
   ret_fun_body_string <- ""
-  ret_fun_env <- new.env()
+  ret_fun_env <- parent.frame() 
+  have_new_env <- FALSE
 
   # If func is an fc or an anonymous function, then evaluate it. 
   # We'll keep it in the return function's evironment so we can use it.
   if (is_fc_function(arg_list$func) || is_anon_function(arg_list$func)) {
+    # We need a new environment to hold anonymous functions.
+    ret_fun_env <- new.env()
+    have_new_env <- TRUE
+
+    # Now create an anonymous function name and function and stash 
+    # it in the function's new environment.
     anon_func_name <- make_anon_func_name(arg_list[3:length(arg_list)])
     ret_fun_env[[anon_func_name]] <- eval(arg_list$func)
     func_name <- anon_func_name
@@ -105,6 +112,10 @@ fc <- function(func, ...) {
       if (length(arg_formals[[i]]) == 1) {
         stop(paste0("Problem with argument", i+1, 
                     ".  You must supply parameters to composed functions."))
+      }
+      if (!have_new_env) {  
+        ret_fun_env <- new.env()
+        have_new_env <- TRUE
       }
       anon_func_name <- make_anon_func_name(
         c(arg_list[3:length(arg_list)], as.list(ret_fun_env)))
