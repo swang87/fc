@@ -20,7 +20,6 @@ language_properties <- function(expr){
     leaf = function(e, w ){
       # deal with argument list of functions
       if( typeof(e) == "pairlist" ){
-        browser()
         stop("Don't know what to do.")
         w$call.list( e, w )
       } else if (typeof(e) == "symbol") {
