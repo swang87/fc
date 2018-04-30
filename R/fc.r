@@ -1,3 +1,8 @@
+is_anon_function <- function(expr) {
+  substr(as.character(as.expression(expr)),
+         1, 9) == "function("
+}
+
 
 # We should be stripping outer left perens.
 is_fc_function <- function(expr) {
@@ -59,6 +64,32 @@ make_function <- function(args, body, env) {
   f
 } 
 
+#' @title Generalized Function Composition and Partial Function Evaluation
+#'
+#' @description 'fc' is used to modify functions. It can be used to
+#' compose function with specified function parameters and it can be used
+#' to set parameter values (partial function evaluation).
+#'
+#' @param func the function to be modified.
+#' @param ... the function modifiers (see Details).
+#' @return A modified function based on the parameters provided.
+#' @details The 'fc' function works by capturing function modifier
+#' expressions in a list, which can be applied to the specified function
+#' via the 'do.call' function.
+#' The function make use of standard R evaluation only. The 'substitute'
+#' function is not used and modifiers expressions must be syntatically valid.
+#' @examples
+#'
+#' # Partial function evaluation - a function that returns the first three
+#' # elements of an object.
+#' head3 <- fc(head, n=3)
+#'
+#' # Function composition - a function that returns the fifth through the
+#' # 10th element of an object using the head and tail functions.
+#' head_1_to_10 <- fapply(head, n=10)
+#' head_5_to_10 <- fapply(tail, x=head_1_to_10(x))
+#' head_5_to_10(iris)
+#' @export
 #' @export
 fc <- function(func, ...) {
   # Get the arguments.

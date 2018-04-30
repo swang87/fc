@@ -44,7 +44,6 @@ language_properties <- function(expr){
        variables=unique(props[["variables"]]))
 }
 
-#' @export
 get_variable_names <- function(expr) {
   language_properties(expr)$variables
 }
