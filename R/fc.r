@@ -91,7 +91,7 @@ make_function <- function(args, body, env) {
 #' head_5_to_10(iris)
 #' @export
 #' @export
-fc <- function(func, ...) {
+fc <- function(.func, ...) {
   # Get the arguments.
   arg_list <- as.list(match.call())
  
@@ -102,7 +102,8 @@ fc <- function(func, ...) {
 
   # If func is an fc or an anonymous function, then evaluate it. 
   # We'll keep it in the return function's evironment so we can use it.
-  if (is_fc_function(arg_list$func) || is_anon_function(arg_list$func)) {
+  if (is_fc_function(arg_list[['.func']]) || 
+      is_anon_function(arg_list[['.func']])) {
     # We need a new environment to hold anonymous functions.
     ret_fun_env <- new.env()
     have_new_env <- TRUE
@@ -111,11 +112,15 @@ fc <- function(func, ...) {
     # it in the function's new environment.
     anon_func_name <- make_anon_func_name(
       c(arg_list[3:length(arg_list)], as.list(ret_fun_env)))
-    ret_fun_env[[anon_func_name]] <- eval(arg_list$func)
+    ret_fun_env[[anon_func_name]] <- eval(arg_list[['.func']])
     func_name <- anon_func_name
     func_formals <- formals(ret_fun_env[[anon_func_name]])
   } else {
-    func_name <- as.character(arg_list[[2]])
+    if (is.primitive(eval(arg_list[[2]]))) {
+      func_name <- paste0('`', as.character(arg_list[[2]]), '`')
+    } else {
+      func_name <- as.character(arg_list[[2]])
+    }
     fe <- eval(arg_list[[2]])
     if (!is.function(fe)) {
       stop("The first argument must be a function.")
@@ -154,15 +159,10 @@ fc <- function(func, ...) {
         c(arg_list[3:length(arg_list)], as.list(ret_fun_env)))
 
       # Stash the function in the return function environment.
-      ret_fun_env[[anon_func_name]] <- 
-        eval(parse(text=as.character(arg_formals[[i]][1])))
-      for (j in 2:length(arg_formals[[i]])) {
-        if (is.character(arg_formals[[i]][[j]])) {
-          arg_formals[[i]][j] <- deparse(arg_formals[[i]][j])
-        }
-      }
-      arg_formals[[i]] <- parse(text=(paste0(anon_func_name, "(", 
-        paste(arg_formals[[i]][-1], collapse=", "), ")")))[[1]]
+      ret_fun_env[[anon_func_name]] <- eval(arg_formals[[i]][[1]])
+      arg_formals[[i]] <- parse(text = paste0(anon_func_name, "(",
+        paste0(names(formals(ret_fun_env[[anon_func_name]])), collapse = ", ",
+        ")")))[[1]]
     }
   }
 

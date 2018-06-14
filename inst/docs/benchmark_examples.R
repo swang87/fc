@@ -1,13 +1,10 @@
 library(fc)
-
 library(magrittr)
 library(purrr)
 library(microbenchmark)
 
 
-# NOTE THAT log(sqrt(x)) runs faster!
 log_sqrt_f <- function(x) log(x=sqrt(x))
-
 log_sqrt_compose <- purrr::compose(log, sqrt)
 `%>%` <- magrittr::`%>%`
 log_sqrt_pipe <- . %>% sqrt %>% log

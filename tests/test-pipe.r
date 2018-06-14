@@ -1,4 +1,4 @@
-library(fc)
+#library(fc)
 
 head_5_to_10 <- fc(head, n=10) %>%  tail
 
