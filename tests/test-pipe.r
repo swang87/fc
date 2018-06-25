@@ -28,3 +28,8 @@ if ( !identical(search_sub_trim_f(x),
   stop("Piping with string values as agument parameters failed.")
 }
 
+{function(x) {
+  x[sample(1:nrow(x)),
+    grep("Sepal", colnames(x))]
+}} %>% fc(head, n=10) 
+

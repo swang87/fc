@@ -3,6 +3,11 @@ is_anon_function <- function(expr) {
          1, 9) == "function("
 }
 
+is_evaluable_call <- function(expr) {
+  inherits(expr, "call") && 
+    substr(gsub("\\(", "", as.character(expr)[1]), 1, 1) == "{"
+}
+
 
 # We should be stripping outer left perens.
 is_fc_function <- function(expr) {
@@ -146,7 +151,8 @@ fc <- function(.func, ...) {
   # The following speeds up the case where one of the ... arguments
   # is anther fc.
   for (i in seq_along(arg_formals)) {
-    if (is_fc_function(arg_formals[[i]])) {
+    if (is_fc_function(arg_formals[[i]]) || 
+        is_evaluable_call(arg_formals[[i]])) {
       if (length(arg_formals[[i]]) == 1) {
         stop(paste0("Problem with argument", i+1, 
                     ".  You must supply parameters to composed functions."))
