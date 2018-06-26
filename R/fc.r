@@ -75,7 +75,7 @@ make_function <- function(args, body, env) {
 #' compose function with specified function parameters and it can be used
 #' to set parameter values (partial function evaluation).
 #'
-#' @param func the function to be modified.
+#' @param .func the function to be modified.
 #' @param ... the function modifiers (see Details).
 #' @return A modified function based on the parameters provided.
 #' @details The 'fc' function works by capturing function modifier
@@ -91,8 +91,8 @@ make_function <- function(args, body, env) {
 #'
 #' # Function composition - a function that returns the fifth through the
 #' # 10th element of an object using the head and tail functions.
-#' head_1_to_10 <- fapply(head, n=10)
-#' head_5_to_10 <- fapply(tail, x=head_1_to_10(x))
+#' head_1_to_10 <- fc(head, n=10)
+#' head_5_to_10 <- fc(tail, x=head_1_to_10(x))
 #' head_5_to_10(iris)
 #' @export
 #' @export
