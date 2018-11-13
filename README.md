@@ -2,6 +2,7 @@
 
 ---
 ![travis](https://travis-ci.org/swang87/fc.svg?branch=master)
+[![](https://cranlogs.r-pkg.org/badges/fc)](https://cran.r-project.org/package=fc)
 
 This is an R package that provides a streamlined, standard evaluation-based approach to function composition. 
 Using `fc`, a sequence of functions can be composed together such that returned objects from composed functions are used as intermediate values directly passed to the next function. 

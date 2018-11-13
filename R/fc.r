@@ -9,7 +9,7 @@ is_evaluable_call <- function(expr) {
 }
 
 
-# We should be stripping outer left perens.
+# We should be stripping outer left parens.
 is_fc_function <- function(expr) {
   # Remove open perens at the beginning.
   substr(gsub("^\\(+", "", as.character(as.expression(expr))), 1, 3) == "fc("
@@ -120,10 +120,15 @@ fc <- function(.func, ...) {
     func_name <- anon_func_name
     func_formals <- formals(ret_fun_env[[anon_func_name]])
   } else {
+
     if (is.primitive(eval(arg_list[[2]]))) {
       func_name <- paste0('`', as.character(arg_list[[2]]), '`')
     } else {
       func_name <- as.character(arg_list[[2]])
+    }
+    if (length(func_name) > 1) {
+      func_name <- gsub("`", "",
+                        paste(func_name[c(2, 1, 3)], collapse=""))
     }
     fe <- eval(arg_list[[2]])
     if (!is.function(fe)) {

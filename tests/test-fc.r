@@ -9,6 +9,10 @@ if ( !identical(fc(tail, x=head(y, n=10))(iris), iris[5:10,]) ) {
   stop("Argument modifier failed.")
 }
 
+if (!identical(fc(matrix, data= data, ncol = 3)(1:9),
+               fc(base::matrix, data= data, ncol = 3)(1:9))) {
+  stop("Unable to accept package-qualified function names.")
+}
 
 head_1_to_10 <- fc(head, n=10)
 head_5_to_10 <- fc(tail, x=head_1_to_10(x))
@@ -22,7 +26,7 @@ v <- runif(10)
 set.seed(5)
 sumtwice <- fc(sum, x=x, y=x)
 if ( !identical(sumtwice(v), sum(v)*2) ) {
-  stop("Passing random parameter, sampled once, failed.")  
+  stop("Passing random parameter, sampled once, failed.")
 }
 
 head_1_to_10 <- fc(head, n=10)
@@ -45,14 +49,14 @@ if ( !identical(rb_samples, rbinom(10, size, prob)) ) {
   stop("Generalized function composition failed.")
 }
 
-rand_f <- fc(rf, 
+rand_f <- fc(rf,
              df1=abs(round(rnorm(n, 20))),
              df2=abs(round(rnorm(n, 10))), ncp=4)
 set.seed(1)
 fc_rf_samples <- rand_f(10)
 set.seed(1)
-rf_samples <- rf(10, 
-                 abs(round(rnorm(10, 20))), 
+rf_samples <- rf(10,
+                 abs(round(rnorm(10, 20))),
                  abs(round(rnorm(10, 10))), ncp=4)
 if ( !identical(fc_rf_samples, rf_samples) ) {
   stop(paste("Generalized function composition and partial function",
