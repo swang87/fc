@@ -42,14 +42,14 @@ make_anon_func_name <- function(a) {
 args_to_string <- function(args) {
   ret <- c()
   for(i in seq_len(length(args))) {
-    if (length(args[[i]]) == 1 && as.character(args[[i]]) == "") {
-      ret <- c(ret, names(args)[i])
-    } else {
+    # if (length(args[[i]]) == 1 && as.character(args[[i]]) == "") {
+    #   ret <- c(ret, names(args)[i])
+    # } else {
       if (is.character(args[[i]])) {
         args[[i]] <- deparse(args[[i]])
       }
       ret <- c(ret, paste(names(args)[i], as.character(args[i]), sep=" = "))
-    }
+    # }
   }
   ret
 }

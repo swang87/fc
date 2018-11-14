@@ -14,6 +14,18 @@ if (!identical(fc(matrix, data= data, ncol = 3)(1:9),
   stop("Unable to accept package-qualified function names.")
 }
 
+if (!identical(fc(head, x = datasets::iris)(), fc(head, x = iris)())) {
+  stop("Unable to find variable as passed argument in global environment.")
+}
+
+if (!identical(fc(print, x='1', quote = T)(),
+               fc(print, x='1', quote = TRUE)())) {
+  stop("Unable to pass in T for TRUE as argument value.")
+}
+
+if (formals(fc(paste, collapse=''))$collapse != "") {
+  stop("Unable to use empty string '' as argument value.")
+}
 head_1_to_10 <- fc(head, n=10)
 head_5_to_10 <- fc(tail, x=head_1_to_10(x))
 
