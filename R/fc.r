@@ -193,9 +193,10 @@ fc <- function(.func, ...) {
 
   # pevn - Parameter expression variables names. The variables that show
   # up on the right side of the expressions in ... They must appear
-  # as parameters in the returned function.
+  # as parameters in the returned function if they are not already bound.
   dot_names <- lapply(arg_formals, get_variable_names)
   pevn <- unlist(dot_names)
+  pevn <- pevn[vapply(pevn, function(x) symbol_has_env(x), FALSE)]
   formals_from_func <- setdiff(unbound_args(func_formals), names(arg_formals))
   ret_fun_body_string <- paste0(func_name, "(",
     paste(c(formals_from_func, args_to_string(arg_formals)), collapse=", "),

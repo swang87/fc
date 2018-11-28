@@ -114,3 +114,8 @@ if ( !identical(f(iris), summary(tail(head(iris)))) ) {
 
 #fc(gsub, pattern=".*>(.*)<.*", replacement = "\\1")
 
+.set.seed(1)
+if (any(fc(sample, x = letters)(3) != c("m", "k", "u"))) {
+  stop("Only include unbound symbols as defaults failed.")
+}
+
