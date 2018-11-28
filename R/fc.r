@@ -1,3 +1,18 @@
+symbol_name_env <- function(name, env = parent.frame()) {
+  if (identical(env, emptyenv())) {
+    NA
+  } else if (exists(name, env, inherits = FALSE)) {
+    env
+  } else {
+    symbol_name_env(name, parent.env(env))
+  }
+}
+
+symbol_has_env <- function(symbol) {
+  symbol_name <- as.character(as.list(match.call())$sym)
+  is.environment(symbol_name_env(symbol_name))
+}
+
 is_anon_function <- function(expr) {
   substr(as.character(as.expression(expr)),
          1, 9) == "function("
