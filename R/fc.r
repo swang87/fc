@@ -8,6 +8,10 @@ symbol_name_env <- function(name, env = parent.frame()) {
   }
 }
 
+symbol_name_has_env <- function(name) {
+  is.environment(symbol_name_env(name))
+}
+
 symbol_has_env <- function(symbol) {
   symbol_name <- as.character(as.list(match.call())$sym)
   is.environment(symbol_name_env(symbol_name))
@@ -196,7 +200,7 @@ fc <- function(.func, ...) {
   # as parameters in the returned function if they are not already bound.
   dot_names <- lapply(arg_formals, get_variable_names)
   pevn <- unlist(dot_names)
-  pevn <- pevn[vapply(pevn, function(x) symbol_has_env(x), FALSE)]
+  pevn <- pevn[vapply(pevn, function(x) !symbol_name_has_env(x), FALSE)]
   formals_from_func <- setdiff(unbound_args(func_formals), names(arg_formals))
   ret_fun_body_string <- paste0(func_name, "(",
     paste(c(formals_from_func, args_to_string(arg_formals)), collapse=", "),
