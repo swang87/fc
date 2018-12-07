@@ -76,7 +76,8 @@ args_to_string <- function(args) {
 unbound_args <- function(args) {
   ub <- unlist(lapply(args,
                function(x) length(x) == 1 &&
-               as.character(x) == "" && !(!is.symbol(x) && is.na(x))))
+               (!is.character(x) && as.character(x) == "") && !is.logical(x) &&
+                 !(!is.symbol(x) && is.na(x))))
   names(args)[ub]
 }
 
@@ -200,7 +201,8 @@ fc <- function(.func, ...) {
   # as parameters in the returned function if they are not already bound.
   dot_names <- lapply(arg_formals, get_variable_names)
   pevn <- unlist(dot_names)
-  pevn <- pevn[vapply(pevn, function(x) !symbol_name_has_env(x), FALSE)]
+  pevn <- setdiff(pevn, c("T", "F"))
+  # pevn <- pevn[vapply(pevn, function(x) !symbol_name_has_env(x), FALSE)]
   formals_from_func <- setdiff(unbound_args(func_formals), names(arg_formals))
   ret_fun_body_string <- paste0(func_name, "(",
     paste(c(formals_from_func, args_to_string(arg_formals)), collapse=", "),
