@@ -8,7 +8,7 @@ language_properties <- function(expr){
 
   cw <- makeCodeWalker (
     call = function(e, w) {
-      if( is.null(e) || length(e) == 0 ) return()
+      if( is.null(e) || length(e) == 0 || as.character(e[[1]]) == "::") return()
       # add the current function to the list
       props[["functions"]] <-
           c( props[["functions"]], as.character(e[[1]]) )
