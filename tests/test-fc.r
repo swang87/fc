@@ -9,16 +9,17 @@ if ( !identical(fc(tail, x=head(y, n=10))(iris), iris[5:10,]) ) {
   stop("Argument modifier failed.")
 }
 
-if (!identical(fc(matrix, data= data, ncol = 3)(1:9),
-               fc(base::matrix, data= data, ncol = 3)(1:9))) {
+if (!identical(fc(matrix, data=.data, ncol = 3)(1:9),
+               fc(base::matrix, data=.data, ncol = 3)(1:9))) {
   stop("Unable to accept package-qualified function names.")
 }
 
-if (!identical(fc(head, x = datasets::iris)(), fc(head, x = iris)())) {
+if (!identical(fc(head, x = datasets::iris)(), 
+               fc(head, x = datasets::iris)())) {
   stop("Unable to find variable as passed argument in global environment.")
 }
 
-if (!identical(fc(print, x='1', quote = T)(),
+if (!identical(fc(print, x='1', quote = base::T)(),
                fc(print, x='1', quote = TRUE)())) {
   stop("Unable to pass in T for TRUE as argument value.")
 }
@@ -27,7 +28,7 @@ if (formals(fc(paste, collapse=''))$collapse != "") {
   stop("Unable to use empty string '' as argument value.")
 }
 head_1_to_10 <- fc(head, n=10)
-head_5_to_10 <- fc(tail, x=head_1_to_10(x))
+head_5_to_10 <- fc(tail, x=head_1_to_10(.x))
 
 if ( !identical(head_5_to_10(iris), iris[5:10,]) ) {
   stop("Function composition failed.")
@@ -36,13 +37,13 @@ if ( !identical(head_5_to_10(iris), iris[5:10,]) ) {
 set.seed(5)
 v <- runif(10)
 set.seed(5)
-sumtwice <- fc(sum, x=x, y=x)
+sumtwice <- fc(sum, x=.x, y=.x)
 if ( !identical(sumtwice(v), sum(v)*2) ) {
   stop("Passing random parameter, sampled once, failed.")
 }
 
 head_1_to_10 <- fc(head, n=10)
-head_9_to_10 <- fc(tail, x=head_1_to_10(x), n=2)
+head_9_to_10 <- fc(tail, x=head_1_to_10(.x), n=2)
 
 if ( !identical(head_9_to_10(iris), iris[9:10,]) ) {
   stop("Function composition and partial function evaluation failed.")
@@ -76,7 +77,7 @@ if ( !identical(fc_rf_samples, rf_samples) ) {
 }
 
 # Evaluate the function and stash it in the return function environment.
-first <- fc(head, x = fc(head, n=1)(x))
+first <- fc(head, x = fc(head, n=1)(.x))
 if ( !identical( iris[1,], first(iris)) ) {
   stop("Function composition with anonymous functions failed.")
 }
@@ -114,8 +115,8 @@ if ( !identical(f(iris), summary(tail(head(iris)))) ) {
 
 #fc(gsub, pattern=".*>(.*)<.*", replacement = "\\1")
 
-.set.seed(1)
-if (any(fc(sample, x = letters)(3) != c("m", "k", "u"))) {
+set.seed(1)
+if (any(fc(sample, x = base::letters)(3) != c("g", "j", "n"))) {
   stop("Only include unbound symbols as defaults failed.")
 }
 

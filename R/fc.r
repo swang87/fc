@@ -200,8 +200,12 @@ fc <- function(.func, ...) {
   # as parameters in the returned function if they are not already bound.
   dot_names <- lapply(arg_formals, get_variable_names)
   pevn <- unlist(dot_names)
-  pevn <- pevn[vapply(pevn, function(x) !symbol_name_has_env(x), FALSE)]
+  #pevn <- pevn[vapply(pevn, function(x) !symbol_name_has_env(x), FALSE)]
   formals_from_func <- setdiff(unbound_args(func_formals), names(arg_formals))
+#  ret_fun_body_string <- paste0(func_name, "(",
+#    paste(c(paste(formals_from_func, formals_from_func, sep = " = "), 
+#            args_to_string(arg_formals)), collapse=", "),
+#          ")")
   ret_fun_body_string <- paste0(func_name, "(",
     paste(c(formals_from_func, args_to_string(arg_formals)), collapse=", "),
     ")")
